@@ -110,6 +110,61 @@ class TestClassifyFailure:
         assert hxs.classify_failure('{"results": [{}]}', "") == 0
 
 
+class TestSuccessPathNoMisclassification:
+    """Regression: successful search results containing words like 'OAuth'
+    or 'rate limit' must NOT be misclassified as failures (codex review)."""
+
+    def test_tweet_text_mentions_oauth(self, monkeypatch, capsys):
+        fake_response = json.dumps({
+            "results": [{
+                "url": "https://x.com/u/status/1",
+                "author": "@u",
+                "posted_at": "2026-05-18T00:00:00Z",
+                "text": "Just learned about OAuth and 429 rate limit handling!",
+            }],
+            "query_summary": "tweets about OAuth",
+        })
+        monkeypatch.setattr(hxs, "run_hermes", lambda args: (0, fake_response, ""))
+        monkeypatch.setattr(sys, "argv", ["hxs", "--query", "OAuth", "--output", "json"])
+        rc = hxs.main()
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "OAuth" in out
+
+    def test_tweet_text_mentions_x_search_unavailable_keyword(
+        self, monkeypatch, capsys,
+    ):
+        # The literal sentinel keyword inside tweet text should NOT trigger
+        # exit 11 on success path — only the JSON `error` field does.
+        fake_response = json.dumps({
+            "results": [{
+                "url": "u",
+                "author": "@a",
+                "posted_at": "t",
+                "text": "discussion of x_search_unavailable error pattern",
+            }],
+            "query_summary": "tweets",
+        })
+        monkeypatch.setattr(hxs, "run_hermes", lambda args: (0, fake_response, ""))
+        monkeypatch.setattr(sys, "argv", ["hxs", "--query", "test", "--output", "json"])
+        rc = hxs.main()
+        assert rc == 0
+
+    def test_explicit_json_error_still_classified(self, monkeypatch):
+        fake_response = '{"error": "x_search_unavailable"}'
+        monkeypatch.setattr(hxs, "run_hermes", lambda args: (0, fake_response, ""))
+        monkeypatch.setattr(sys, "argv", ["hxs", "--query", "test"])
+        rc = hxs.main()
+        assert rc == 11
+
+    def test_nonzero_rc_still_uses_keyword_classification(self, monkeypatch):
+        monkeypatch.setattr(hxs, "run_hermes",
+                            lambda args: (1, "", "OAuth login required"))
+        monkeypatch.setattr(sys, "argv", ["hxs", "--query", "test"])
+        rc = hxs.main()
+        assert rc == 10
+
+
 class TestRenderMarkdown:
     def test_empty_results(self):
         md = hxs.render_markdown(

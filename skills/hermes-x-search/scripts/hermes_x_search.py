@@ -244,6 +244,10 @@ def main() -> int:
         print(stderr, file=sys.stderr)
 
     if rc != 0:
+        # Only inspect failure-mode keywords when Hermes itself failed.
+        # Doing this on the success path would misclassify valid search
+        # results that happen to contain words like "OAuth" or "rate limit"
+        # (e.g. a query for tweets about authentication).
         classified = classify_failure(stdout, stderr)
         if classified:
             print(f"hermes failed: see stderr for details", file=sys.stderr)
@@ -252,12 +256,6 @@ def main() -> int:
         print(f"hermes failed (exit {rc})", file=sys.stderr)
         print(stderr, file=sys.stderr)
         return 1
-
-    classified = classify_failure(stdout, stderr)
-    if classified:
-        print("hermes reported a recoverable failure", file=sys.stderr)
-        print(stdout, file=sys.stderr)
-        return classified
 
     parsed = extract_json(stdout)
     if parsed is None:
