@@ -130,10 +130,18 @@ cd hermes_x_search_skill
 → Claude が `hermes-x-search` スキルを発動し、結果を表示します。
 
 **Codex:**
+
+Codex のデフォルトサンドボックスは Hermes が `~/.hermes/logs/` 等へ書き込むのを拒否します（`workspace-write` は cwd 配下しか書けないため不十分）。`~/.hermes` をホームに持つ Hermes を呼ぶには **`--sandbox danger-full-access`** を指定するか、Codex の writable_roots 設定に `~/.hermes` を追加してください。
+
 ```bash
-# Codex はデフォルトサンドボックスで Hermes 実行を阻害するため、
-# workspace-write 以上のサンドボックスが必要です
-codex exec --sandbox workspace-write "@example_user の最新ポスト 3件を取得して"
+# 最も手早い方法（フルアクセス、サンドボックス無効）
+codex exec --sandbox danger-full-access \
+  "@example_user の最新ポスト 3件を取得して"
+
+# よりきめ細かい権限制御：~/.hermes を writable_roots に追加
+codex exec --sandbox workspace-write \
+  -c 'sandbox_workspace_write.writable_roots=["~/.hermes"]' \
+  "@example_user の最新ポスト 3件を取得して"
 ```
 
 **直接コマンド（ラッパー単体）:**
@@ -205,7 +213,7 @@ hermes_x_search.py [OPTIONS]
 - **キーワード検索の精度は Grok 任せ**: 一般的な単語（例: "Claude Code"）の場合、Grok が X Search ツールを呼ばずに空配列を返すことがあります。`--user` 指定との併用、より具体的なフレーズ、短期間指定で安定する傾向。
 - **`since` / `until` は Grok が X 検索クエリ言語に翻訳**: 期間が狭すぎる・古すぎると 0 件になります。
 - **起動時間**: 1 リクエストあたり 30〜120 秒（Hermes 起動 + LLM 推論 + ツール実行）。将来的な常駐デーモン化は ToDo。
-- **Codex のサンドボックス**: デフォルトの `read-only` サンドボックスでは Hermes が `~/.hermes/logs/agent.log` への書き込みを拒否されます。`codex exec --sandbox workspace-write` 以上を指定してください。
+- **Codex のサンドボックス**: デフォルトの `read-only` サンドボックスでは Hermes が `~/.hermes/logs/agent.log` への書き込みを拒否されます。`workspace-write` も cwd 外を書けないため、`--sandbox danger-full-access` を指定するか、`-c 'sandbox_workspace_write.writable_roots=["~/.hermes"]'` で `~/.hermes` を明示許可してください。
 - **likes / reposts / views**: X Search ツールが返さない場合があり、その時は `null` になります。
 
 ## トラブルシュート
@@ -218,7 +226,7 @@ hermes_x_search.py [OPTIONS]
 | `exit 12` / `rate limit` | しばらく待って再試行 |
 | `exit 13` / `could not parse JSON` | `--debug` で生応答を確認。Grok の出力が壊れている可能性 |
 | Claude Code が skill を発動しない | `~/.claude/skills/hermes-x-search/` が存在するか確認。無ければ `./scripts/install.sh` を再実行 |
-| Codex が hermes を呼べない | `codex exec --sandbox workspace-write ...` または `HERMES_BIN=/path/to/hermes` を設定 |
+| Codex が hermes を呼べない | サンドボックス問題: `--sandbox danger-full-access` か `-c 'sandbox_workspace_write.writable_roots=["~/.hermes"]'`。PATH 問題: `HERMES_BIN=/path/to/hermes` を設定 |
 | 「No matching posts found.」が返るが結果があるはず | 既知制約セクション参照。`--user` 併用や具体的キーワードを試す |
 
 ### 詳細デバッグ
