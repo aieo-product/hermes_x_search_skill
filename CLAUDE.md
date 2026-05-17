@@ -73,7 +73,7 @@ Claude Code / Codex CLI から Hermes Agent 経由で X (Twitter) 検索を行�
 - [ ] CONTRIBUTING.md がある（コントリビュータ向けガイド、後続で追加検討）
 - [ ] CODE_OF_CONDUCT.md の検討
 - [ ] `.gitignore` で機密情報を完全ブロック
-- [ ] `git log -p` 全体に対し `grep -i 'token\|secret\|key\|@otani\|@take' ` で漏洩チェック
+- [ ] `git log -p` 全体に対し `grep -iE 'token|secret|api_?key|password|sk-[a-z0-9]{20,}|<maintainer-handle>'` で漏洩チェック（実際の検査時は `<maintainer-handle>` をメンテナのハンドル名で置き換える）
 - [ ] サンプル / テストデータに個人情報が含まれない
 - [ ] 依存ライブラリのライセンスが MIT と互換
 
