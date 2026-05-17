@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "url": "https://x.com/example_user/status/0000000000000000000",
+      "author": "@example_user",
+      "posted_at": null,
+      "text": "Hermes Agent導入 Xプレミアム＋Hermes Agent経由でGrokのx_searchツールをAPIキーなしで使えるようになったことを高評価。「ついにHermesAgentを導入する理由が出来ました。Xポスト検索が無料なのはデカすぎる」と投稿。",
+      "likes": null,
+      "reposts": null,
+      "views": null
+    },
+    {
+      "url": "https://x.com/example_user/status/0000000000000000000",
+      "author": "@example_user",
+      "posted_at": null,
+      "text": "Claude Codeのベストプラクティスについて 大規模コードベースでの公式推奨（CLAUDE.mdの運用、pluginとMCPの使い分け、ハーネスの積み方など）を参考にしようとコメント。",
+      "likes": null,
+      "reposts": null,
+      "views": null
+    },
+    {
+      "url": "https://x.com/example_user/status/0000000000000000000",
+      "author": "@example_user",
+      "posted_at": null,
+      "text": "SEO vs AEO議論 AIエージェントがWebをfetchする場合、SEOが効いていないと見つけられない点を指摘。「webfetchしてるんだからSEO効いてないとエージェントが見つけれる訳もなく…」と実体験に基づく意見を述べています。",
+      "likes": null,
+      "reposts": null,
+      "views": null
+    }
+  ],
+  "query_summary": "most recent posts by @example_user using from:example_user query"
+}

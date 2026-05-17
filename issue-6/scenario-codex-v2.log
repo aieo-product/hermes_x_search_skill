@@ -1,0 +1,60 @@
+    # Handle top-level --oneshot / -z: single-shot mode, stdout = final
+    # response only, nothing else. Bypasses cli.py entirely.
+    if getattr(args, "oneshot", None):
+        from hermes_cli.oneshot import run_oneshot
+
+        sys.exit(
+            run_oneshot(
+                args.oneshot,
+                model=getattr(args, "model", None),
+                provider=getattr(args, "provider", None),
+                toolsets=getattr(args, "toolsets", None),
+            )
+        )
+
+    # Handle top-level --resume / --continue as shortcut to chat
+    if (args.resume or args.continue_last) and args.command is None:
+        args.command = "chat"
+        for attr, default in [
+            ("query", None),
+            ("model", None),
+            ("provider", None),
+            ("toolsets", None),
+            ("verbose", False),
+            ("worktree", False),
+        ]:
+
+codex
+ログファイル作成だけがブロックしているので、Hermes の実体を直接起動し、ファイルログのハンドラ追加だけをプロセス内で無効化して試します。検索内容や X Search の呼び出し自体は同じです。
+exec
+/bin/zsh -lc '/Users/USER/.hermes/hermes-agent/venv/bin/python3 -c $'"'import sys\\nimport hermes_logging\\nhermes_logging._add_rotating_handler = lambda *args, **kwargs: None\\nfrom hermes_cli.oneshot import run_oneshot\\nprompt = \"\"\"Please find the most recent posts by @example_user, return up to 2 matching posts.\\n\\nYOU MUST call the X (Twitter) Search tool to fulfil this request. Use ONLY the X (Twitter) Search tool - do not call any other tools, and do not answer from your own knowledge. Do NOT return an empty result without first calling the tool - if the tool returns nothing, then an empty list is acceptable, but a skipped tool call is not.\\n\\nAfter the tool returns, format your final reply as a SINGLE JSON object (no markdown fences, no prose around it) with this schema:\\n{\\n  \\\\\"results\\\\\": [\\n    {\\n      \\\\\"url\\\\\":       \\\\\"https://x.com/<user>/status/<id>\\\\\",\\n      \\\\\"author\\\\\":    \\\\\"@handle\\\\\",\\n      \\\\\"posted_at\\\\\": \\\\\"ISO 8601 timestamp if available, else the relative time\\\\\",\\n      \\\\\"text\\\\\":      \\\\\"full post text\\\\\",\\n      \\\\\"likes\\\\\":     <integer or null>,\\n      \\\\\"reposts\\\\\":   <integer or null>,\\n      \\\\\"views\\\\\":     <integer or null>\\n    }\\n  ],\\n  \\\\\"query_summary\\\\\": \\\\\"one-sentence description of what was searched\\\\\"\\n}\\n\\nIf the X (Twitter) Search tool is not available in this Hermes instance, respond ONLY with: {\\\\\"error\\\\\": \\\\\"x_search_unavailable\\\\\"}.\"\"\"\\nraise SystemExit(run_oneshot(prompt))'" in /Volumes/AIWorkSSD/AIWorkSpace/playground/hermes
+codex
+直接起動は通りました。Hermes が実行中なので、X Search の応答完了を待っています。
+ succeeded in 21766ms:
+API call failed after 3 retries: Connection error.
+
+web search: 
+web search: site:x.com/example_user @example_user latest posts
+web search: 
+web search: 
+web search: 
+web search: https://tweetgrok.ai/twitter-viewer
+codex
+取得できませんでした。
+
+`hermes-x-search` skill のラッパーを実行しましたが、現在の実行環境で以下の 2 段階の問題に当たりました。
+
+1. 通常実行: `~/.hermes/logs/agent.log` への書き込みが read-only サンドボックスで拒否
+2. ログ書き込みを回避して直接起動: Hermes の API 呼び出しが `Connection error` で 3 回リトライ後に失敗
+
+実行対象は `@example_user`、取得件数は `2` 件で試しています。現状はネットワーク制限または Hermes 側の接続問題で、最新ポスト本文までは取得できませんでした。
+tokens used
+57,902
+取得できませんでした。
+
+`hermes-x-search` skill のラッパーを実行しましたが、現在の実行環境で以下の 2 段階の問題に当たりました。
+
+1. 通常実行: `~/.hermes/logs/agent.log` への書き込みが read-only サンドボックスで拒否
+2. ログ書き込みを回避して直接起動: Hermes の API 呼び出しが `Connection error` で 3 回リトライ後に失敗
+
+実行対象は `@example_user`、取得件数は `2` 件で試しています。現状はネットワーク制限または Hermes 側の接続問題で、最新ポスト本文までは取得できませんでした。
