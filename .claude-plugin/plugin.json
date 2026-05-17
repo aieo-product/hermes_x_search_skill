@@ -1,0 +1,9 @@
+{
+  "name": "hermes-x-search",
+  "description": "Hermes Agent 経由で X (Twitter) リアルタイム検索を Claude Code / Codex から利用できるようにするスキル",
+  "version": "0.1.0",
+  "author": { "name": "aieo-product" },
+  "license": "MIT",
+  "homepage": "https://github.com/aieo-product/hermes_x_search_skill",
+  "repository": "https://github.com/aieo-product/hermes_x_search_skill"
+}
