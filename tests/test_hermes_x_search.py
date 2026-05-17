@@ -81,6 +81,15 @@ class TestBuildPrompt:
         assert "YOU MUST call" in p
         assert "skipped tool call is not" in p
 
+    def test_forbids_other_tools(self):
+        # Regression: codex review on PR #12 caught that the rewrite dropped
+        # the "do not call other tools" constraint. Restore it so Hermes
+        # instances with multiple tools don't mix in non-X data.
+        a = hxs.parse_args(["--query", "x"])
+        p = hxs.build_prompt(a)
+        assert "Use ONLY the X (Twitter) Search tool" in p
+        assert "do not call any other tools" in p
+
     def test_combined_user_and_query(self):
         a = hxs.parse_args(["--user", "example", "--query", "foo bar"])
         p = hxs.build_prompt(a)

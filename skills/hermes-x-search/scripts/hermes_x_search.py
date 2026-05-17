@@ -125,7 +125,8 @@ def build_prompt(args: SearchArgs) -> str:
     return (
         f"{request}\n\n"
         "YOU MUST call the X (Twitter) Search tool to fulfil this request. "
-        "Do NOT answer from your own knowledge. "
+        "Use ONLY the X (Twitter) Search tool — do not call any other tools, "
+        "and do not answer from your own knowledge. "
         "Do NOT return an empty result without first calling the tool — "
         "if the tool returns nothing, then an empty list is acceptable, but a "
         "skipped tool call is not.\n\n"
