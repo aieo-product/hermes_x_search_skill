@@ -1,0 +1,24 @@
+{
+  "name": "hermes-x-search",
+  "version": "0.1.0",
+  "description": "Hermes Agent 経由で X (Twitter) リアルタイム検索を Codex から利用できるようにするスキル",
+  "author": { "name": "aieo-product" },
+  "license": "MIT",
+  "homepage": "https://github.com/aieo-product/hermes_x_search_skill",
+  "repository": "https://github.com/aieo-product/hermes_x_search_skill",
+  "keywords": ["x", "twitter", "search", "hermes", "grok"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Hermes X Search",
+    "shortDescription": "X (Twitter) のリアルタイム検索",
+    "longDescription": "Hermes Agent（xAI Grok OAuth）を経由して X (旧 Twitter) のリアルタイム検索を実行します。特定ユーザーの最新ポスト取得、キーワード検索、期間指定検索に対応。事前に Hermes Agent のインストールと xAI Grok OAuth 認証、X Search ツールの有効化が必要です。",
+    "developerName": "aieo-product",
+    "category": "Research",
+    "capabilities": ["Read"],
+    "defaultPrompt": [
+      "@example_user の最新ポストを取得して",
+      "Claude Code に関する直近24時間のポストを検索して"
+    ],
+    "websiteURL": "https://github.com/aieo-product/hermes_x_search_skill"
+  }
+}
