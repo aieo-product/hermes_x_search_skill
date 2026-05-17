@@ -72,6 +72,30 @@ class TestBuildPrompt:
         assert '"query_summary"' in p
         assert "x_search_unavailable" in p
 
+    def test_explicit_tool_call_mandate(self):
+        # Regression for #11: prompt must explicitly forbid skipping the tool
+        # call so the model does not shortcut to an empty schema-conformant
+        # reply when the schema is hard to satisfy.
+        a = hxs.parse_args(["--query", "Claude Code"])
+        p = hxs.build_prompt(a)
+        assert "YOU MUST call" in p
+        assert "skipped tool call is not" in p
+
+    def test_forbids_other_tools(self):
+        # Regression: codex review on PR #12 caught that the rewrite dropped
+        # the "do not call other tools" constraint. Restore it so Hermes
+        # instances with multiple tools don't mix in non-X data.
+        a = hxs.parse_args(["--query", "x"])
+        p = hxs.build_prompt(a)
+        assert "Use ONLY the X (Twitter) Search tool" in p
+        assert "do not call any other tools" in p
+
+    def test_combined_user_and_query(self):
+        a = hxs.parse_args(["--user", "example", "--query", "foo bar"])
+        p = hxs.build_prompt(a)
+        assert "@example" in p
+        assert "foo bar" in p
+
 
 class TestExtractJson:
     def test_clean_json(self):

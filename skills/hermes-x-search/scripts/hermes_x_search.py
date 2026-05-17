@@ -102,44 +102,52 @@ def parse_args(argv: list[str]) -> SearchArgs:
 
 
 def build_prompt(args: SearchArgs) -> str:
-    """Construct a prompt that forces Hermes to use only the X Search tool
-    and return strict JSON."""
-    constraints = []
-    if args.query:
-        constraints.append(f'keyword search: {args.query}')
-    if args.user:
-        constraints.append(f'from user: @{args.user}')
+    """Build a prompt that (a) forces the X Search tool to fire and (b) asks
+    for a JSON-shaped response, with natural-language framing in front so the
+    model does not shortcut to an empty schema-conformant reply."""
+
+    parts = []
+    if args.user and args.query:
+        parts.append(f"posts by @{args.user} that match the query: {args.query}")
+    elif args.user:
+        parts.append(f"the most recent posts by @{args.user}")
+    elif args.query:
+        parts.append(f"posts matching the query: {args.query}")
+
     if args.since:
-        constraints.append(f'since: {args.since}')
+        parts.append(f"posted on or after {args.since}")
     if args.until:
-        constraints.append(f'until: {args.until}')
-    constraints.append(f'count: {args.count}')
+        parts.append(f"posted on or before {args.until}")
+    parts.append(f"return up to {args.count} matching posts")
+
+    request = "Please find " + ", ".join(parts) + "."
 
     return (
-        "Use ONLY the X (Twitter) Search tool. Do not use any other tools. "
-        "Do not answer from your own knowledge. "
-        "Search X for the following and return the matching posts:\n\n"
-        + "\n".join(f"- {c}" for c in constraints)
-        + "\n\n"
-        "Return the result as a SINGLE JSON object (no prose, no markdown fences) "
-        "with this exact schema:\n"
+        f"{request}\n\n"
+        "YOU MUST call the X (Twitter) Search tool to fulfil this request. "
+        "Use ONLY the X (Twitter) Search tool — do not call any other tools, "
+        "and do not answer from your own knowledge. "
+        "Do NOT return an empty result without first calling the tool — "
+        "if the tool returns nothing, then an empty list is acceptable, but a "
+        "skipped tool call is not.\n\n"
+        "After the tool returns, format your final reply as a SINGLE JSON object "
+        "(no markdown fences, no prose around it) with this schema:\n"
         "{\n"
         '  "results": [\n'
         '    {\n'
-        '      "url": "https://x.com/<user>/status/<id>",\n'
-        '      "author": "@handle",\n'
-        '      "posted_at": "ISO 8601 timestamp if known, else the relative time shown",\n'
-        '      "text": "full post text",\n'
-        '      "likes": <integer or null>,\n'
-        '      "reposts": <integer or null>,\n'
-        '      "views": <integer or null>\n'
+        '      "url":       "https://x.com/<user>/status/<id>",\n'
+        '      "author":    "@handle",\n'
+        '      "posted_at": "ISO 8601 timestamp if available, else the relative time",\n'
+        '      "text":      "full post text",\n'
+        '      "likes":     <integer or null>,\n'
+        '      "reposts":   <integer or null>,\n'
+        '      "views":     <integer or null>\n'
         '    }\n'
         '  ],\n'
         '  "query_summary": "one-sentence description of what was searched"\n'
         "}\n\n"
-        "If the X Search tool returns no results, set `results` to an empty list. "
-        "If the X Search tool is unavailable, respond ONLY with: "
-        '{"error": "x_search_unavailable"}.'
+        "If the X (Twitter) Search tool is not available in this Hermes instance, "
+        'respond ONLY with: {"error": "x_search_unavailable"}.'
     )
 
 
