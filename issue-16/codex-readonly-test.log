@@ -1,0 +1,20 @@
+```md
+| # | 日時 | 投稿者 | 本文 | リンク |
+|---|------|--------|------|--------|
+| - | - | @example_user | 取得失敗: API call failed after 3 retries: Connection error. | - |
+```
+
+この環境は read-only かつネットワーク制限があるため、Hermes の通常実行に必要なログ書き込み/API接続が通っていません。
+tokens used
+137,119
+取得は完了できませんでした。
+
+`hermes-x-search` ラッパーを呼びましたが、最初は Hermes が `~/.hermes/logs/agent.log` に書き込めず失敗しました。その後、ログ書き込みを無効化して同等の `hermes -z` 実行を試しましたが、Hermes 側のAPI接続で失敗しました。
+
+```md
+| # | 日時 | 投稿者 | 本文 | リンク |
+|---|------|--------|------|--------|
+| - | - | @example_user | 取得失敗: API call failed after 3 retries: Connection error. | - |
+```
+
+この環境は read-only かつネットワーク制限があるため、Hermes の通常実行に必要なログ書き込み/API接続が通っていません。

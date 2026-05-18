@@ -1,0 +1,25 @@
+ラッパーが実行中です。Hermes 経由の検索は 30 秒以上かかることがあるため、完了を待っています。
+ succeeded in 47476ms:
+> Most recent post by @example_user using from:example_user search query
+
+| # | 日時 | 投稿者 | 本文 | リンク |
+|---|------|--------|------|--------|
+| 1 | Today | @example_user | Successfully completed an X post search skill for Hermes that was prepared before bed. | [link](https://x.com/example_user/status/0000000000000000000) |
+
+codex
+取得結果です。
+
+> Most recent post by @example_user using from:example_user search query
+
+| # | 日時 | 投稿者 | 本文 | リンク |
+|---|------|--------|------|--------|
+| 1 | Today | @example_user | Successfully completed an X post search skill for Hermes that was prepared before bed. | [link](https://x.com/example_user/status/0000000000000000000) |
+tokens used
+32,137
+取得結果です。
+
+> Most recent post by @example_user using from:example_user search query
+
+| # | 日時 | 投稿者 | 本文 | リンク |
+|---|------|--------|------|--------|
+| 1 | Today | @example_user | Successfully completed an X post search skill for Hermes that was prepared before bed. | [link](https://x.com/example_user/status/0000000000000000000) |

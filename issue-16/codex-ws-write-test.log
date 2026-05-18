@@ -1,0 +1,25 @@
+
+実行内容:
+
+```bash
+python3 skills/hermes-x-search/scripts/hermes_x_search.py --user example_user --count 1 --output md
+```
+
+同じコマンドを再試行しても同じ接続エラーでした。`HERMES_BIN` は `/Users/USER/.local/bin/hermes` に設定されており、`$HERMES_BIN status` は実行できましたが、Hermes の Grok/API 呼び出し段階で落ちています。
+tokens used
+34,667
+ラッパーを呼びましたが、取得は失敗しました。
+
+```md
+error: could not parse JSON from hermes response
+--- raw response ---
+API call failed after 3 retries: Connection error.
+```
+
+実行内容:
+
+```bash
+python3 skills/hermes-x-search/scripts/hermes_x_search.py --user example_user --count 1 --output md
+```
+
+同じコマンドを再試行しても同じ接続エラーでした。`HERMES_BIN` は `/Users/USER/.local/bin/hermes` に設定されており、`$HERMES_BIN status` は実行できましたが、Hermes の Grok/API 呼び出し段階で落ちています。
