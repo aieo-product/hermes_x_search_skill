@@ -58,6 +58,28 @@ Hermes Agent（xAI Grok OAuth）経由で X (Twitter) のリアルタイム検�
 3. **結果整形**: スクリプトの stdout をそのままユーザーに提示。`output=md` の場合は表形式、`json` の場合はコードフェンス内で JSON
 4. **失敗時**: スクリプトの非 0 終了コードに応じてユーザーにわかりやすいエラーメッセージと対処法を返す
 
+## 出力フォーマット
+
+### JSON（`--output json`）
+
+各 result は以下のフィールドを持つ：
+
+| フィールド | 型 | 説明 |
+|----------|----|------|
+| `url` | string | ポストの permalink |
+| `author` | string | `@handle` 形式 |
+| `posted_at` | string | ISO 8601 もしくは相対時刻文字列 |
+| `text` | string | 本文 |
+| `likes` / `reposts` / `views` | integer or null | エンゲージメント。X Search が返さない場合 `null` |
+| `media` | list | `[{"type": "photo|video|gif", "url": "..."}, ...]`。**画像/動画/GIF が添付されている場合のみ要素あり、無ければ `[]`** |
+
+### Markdown（`--output md`、既定）
+
+表形式で `# / 日時 / 投稿者 / 本文 / メディア / リンク` の 6 列。
+- `media[].type == "photo"` → `![photoN](URL)` でインライン表示
+- `video` / `gif` → `[typeN](URL)` でリンク表示
+- メディア無しのポストは `-` を表示
+
 ## 想定される失敗ケース
 
 | ケース | 検出方法 | ユーザーへの案内 |
@@ -74,6 +96,7 @@ Hermes Agent（xAI Grok OAuth）経由で X (Twitter) のリアルタイム検�
 - **キーワード検索（`--query`）の精度は Grok の判断に依存**：プロンプトで X Search ツール呼び出しを強制しているが、一般的な単語（例: "Claude Code"）の場合に Grok が tool を呼ばずに空配列を返すケースが観測されている。`--user` 指定との併用 / より具体的な単語 / 短期間指定で安定する傾向あり
 - **`since` / `until` の解釈は Grok 任せ**：ISO 8601 を渡しても Grok 側で X Search のクエリ言語に変換される。期間が狭すぎる / 古すぎると 0 件になる
 - **起動時間**: 1 リクエストあたり 30〜120 秒（Hermes 起動 + LLM 推論 + ツール実行）。常駐化は将来課題
+- **メディア URL は best-effort（現状ほぼ取得できない）**: Hermes Agent の X Search ツール（`tools/x_search_tool.py`）は xAI Live Search API を呼ぶが、メディア URL 専用の出力フィールドを持たない。Grok が citation や本文に URL を含めた場合のみ `media` に値が入り、画像付きポストでも `media: []` となるケースが多数。`filter:images` 等のクエリを併用しても改善しない。**プロンプトで「捏造禁止」を明示**しているため、真に取得できない場合は確実に空が返る（嘘の URL は混入しない）。将来 Hermes / xAI Live Search 側の出力にメディアフィールドが追加されれば、本ラッパーは自動的にその情報を拾える
 
 ## 設計メモ
 

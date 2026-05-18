@@ -72,6 +72,15 @@ class TestBuildPrompt:
         assert '"query_summary"' in p
         assert "x_search_unavailable" in p
 
+    def test_includes_media_schema(self):
+        # Regression for #19: schema must request media URLs and instruct
+        # how to use the type field.
+        a = hxs.parse_args(["--user", "x"])
+        p = hxs.build_prompt(a)
+        assert '"media"' in p
+        assert '"photo' in p and 'video' in p and 'gif' in p
+        assert "Do NOT fabricate" in p
+
     def test_explicit_tool_call_mandate(self):
         # Regression for #11: prompt must explicitly forbid skipping the tool
         # call so the model does not shortcut to an empty schema-conformant
@@ -216,6 +225,89 @@ class TestRenderMarkdown:
         assert "| # |" in md
         assert "@u" in md
         assert "https://x.com/u/status/1" in md
+
+    def test_no_media_renders_dash(self):
+        md = hxs.render_markdown(
+            {
+                "results": [{
+                    "url": "https://x.com/u/status/1", "author": "@u",
+                    "posted_at": "t", "text": "no media here",
+                }],
+                "query_summary": "",
+            },
+            hxs.parse_args(["--user", "u"]),
+        )
+        # Expect: a media column header "メディア" and "-" cell for empty media
+        assert "メディア" in md
+        # Check the data row contains a "-" before the link cell (no media)
+        assert " - | [link]" in md
+
+    def test_photo_renders_inline_image(self):
+        md = hxs.render_markdown(
+            {
+                "results": [{
+                    "url": "https://x.com/u/status/2", "author": "@u",
+                    "posted_at": "t", "text": "with photo",
+                    "media": [{"type": "photo", "url": "https://pbs.twimg.com/media/abc.jpg"}],
+                }],
+                "query_summary": "",
+            },
+            hxs.parse_args(["--user", "u"]),
+        )
+        assert "![photo1](https://pbs.twimg.com/media/abc.jpg)" in md
+
+    def test_video_renders_typed_link(self):
+        md = hxs.render_markdown(
+            {
+                "results": [{
+                    "url": "u", "author": "a", "posted_at": "t", "text": "vid",
+                    "media": [{"type": "video", "url": "https://video.twimg.com/x.mp4"}],
+                }],
+                "query_summary": "",
+            },
+            hxs.parse_args(["--user", "u"]),
+        )
+        assert "[video1](https://video.twimg.com/x.mp4)" in md
+        # Should NOT use inline-image syntax for video
+        assert "![video1]" not in md
+
+    def test_multiple_media_items(self):
+        md = hxs.render_markdown(
+            {
+                "results": [{
+                    "url": "u", "author": "a", "posted_at": "t", "text": "many",
+                    "media": [
+                        {"type": "photo", "url": "https://example.com/1.jpg"},
+                        {"type": "photo", "url": "https://example.com/2.jpg"},
+                        {"type": "gif",   "url": "https://example.com/3.gif"},
+                    ],
+                }],
+                "query_summary": "",
+            },
+            hxs.parse_args(["--user", "u"]),
+        )
+        assert "![photo1](https://example.com/1.jpg)" in md
+        assert "![photo2](https://example.com/2.jpg)" in md
+        assert "[gif3](https://example.com/3.gif)" in md
+
+    def test_malformed_media_entries_are_skipped(self):
+        # Regression: missing url / non-dict entries must not crash
+        md = hxs.render_markdown(
+            {
+                "results": [{
+                    "url": "u", "author": "a", "posted_at": "t", "text": "x",
+                    "media": [
+                        {"type": "photo"},          # no url → skip
+                        "not a dict",               # not dict → skip
+                        {"url": "https://x.com/y.jpg"},  # no type → fallback "media"
+                    ],
+                }],
+                "query_summary": "",
+            },
+            hxs.parse_args(["--user", "u"]),
+        )
+        # Only the third entry should render
+        assert "[media3](https://x.com/y.jpg)" in md
 
     def test_pipe_in_text_is_escaped(self):
         md = hxs.render_markdown(
