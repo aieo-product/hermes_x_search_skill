@@ -1,7 +1,7 @@
 # Issue #16 — Codex サンドボックス権限検証エビデンス
 
 実行: 2026-05-18 morning, codex-cli 0.128.0
-個人情報サニタイズ済（@otani_ai_memo → @example_user、tweet ID → 0...0、username → USER）
+個人情報サニタイズ済（ハンドル → `@example_user`、tweet ID → ゼロ埋め、ローカル username → `USER`）
 
 ## 比較表
 
