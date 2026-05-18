@@ -141,11 +141,17 @@ def build_prompt(args: SearchArgs) -> str:
         '      "text":      "full post text",\n'
         '      "likes":     <integer or null>,\n'
         '      "reposts":   <integer or null>,\n'
-        '      "views":     <integer or null>\n'
+        '      "views":     <integer or null>,\n'
+        '      "media":     [{"type": "photo|video|gif", "url": "<media URL>"}, ...]\n'
         '    }\n'
         '  ],\n'
         '  "query_summary": "one-sentence description of what was searched"\n'
         "}\n\n"
+        "For the `media` field: if the post has attached images, videos, or GIFs, "
+        "include every media URL the X Search tool returned (best-effort — if the "
+        "tool gives no media info for a post, set `media` to an empty list `[]`). "
+        "Use `photo` for still images, `video` for videos, `gif` for animated GIFs. "
+        "Do NOT fabricate media URLs.\n\n"
         "If the X (Twitter) Search tool is not available in this Hermes instance, "
         'respond ONLY with: {"error": "x_search_unavailable"}.'
     )
@@ -228,17 +234,40 @@ def render_markdown(parsed: dict, args: SearchArgs) -> str:
         lines.append("_No matching posts found._")
         return "\n".join(lines)
 
-    lines.append("| # | 日時 | 投稿者 | 本文 | リンク |")
-    lines.append("|---|------|--------|------|--------|")
+    lines.append("| # | 日時 | 投稿者 | 本文 | メディア | リンク |")
+    lines.append("|---|------|--------|------|---------|--------|")
     for i, r in enumerate(results, 1):
         text = (r.get("text") or "").replace("\n", " ").replace("|", "\\|")
         if len(text) > 140:
             text = text[:137] + "..."
+        media_cell = _format_media_cell(r.get("media") or [])
         lines.append(
             f"| {i} | {r.get('posted_at', '')} | {r.get('author', '')} | "
-            f"{text} | [link]({r.get('url', '')}) |"
+            f"{text} | {media_cell} | [link]({r.get('url', '')}) |"
         )
     return "\n".join(lines)
+
+
+def _format_media_cell(media: list) -> str:
+    """Render the media list as a compact Markdown cell.
+
+    Each entry becomes either an inline image (for photos) or a typed link
+    (for video/gif). Returns "-" when the list is empty so the table stays
+    readable.
+    """
+    if not media:
+        return "-"
+    parts = []
+    for idx, m in enumerate(media, 1):
+        url = (m.get("url") or "").replace("|", "\\|") if isinstance(m, dict) else ""
+        if not url:
+            continue
+        mtype = (m.get("type") or "media").lower() if isinstance(m, dict) else "media"
+        if mtype == "photo":
+            parts.append(f"![photo{idx}]({url})")
+        else:
+            parts.append(f"[{mtype}{idx}]({url})")
+    return " ".join(parts) if parts else "-"
 
 
 def main() -> int:
