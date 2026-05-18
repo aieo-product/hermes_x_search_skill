@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "url": "https://x.com/NousResearch/status/2056110234309939330",
+      "author": "@NousResearch",
+      "posted_at": "yesterday",
+      "text": "Hermes Agent v0.14.0 - “The Foundation Release” with video.",
+      "likes": null,
+      "reposts": null,
+      "views": null,
+      "media": []
+    },
+    {
+      "url": "https://x.com/NousResearch/status/2056110376496816415",
+      "author": "@NousResearch",
+      "posted_at": "yesterday",
+      "text": "Follow-up with full release notes (GitHub) and update command: `hermes update`.",
+      "likes": null,
+      "reposts": null,
+      "views": null,
+      "media": []
+    }
+  ],
+  "query_summary": "Most recent posts from @NousResearch using query 'from:NousResearch'"
+}
