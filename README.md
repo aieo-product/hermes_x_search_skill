@@ -131,18 +131,35 @@ cd hermes_x_search_skill
 
 **Codex:**
 
-Codex のデフォルトサンドボックスは Hermes が `~/.hermes/logs/` 等へ書き込むのを拒否します（`workspace-write` は cwd 配下しか書けないため不十分）。`~/.hermes` をホームに持つ Hermes を呼ぶには **`--sandbox danger-full-access`** を指定するか、Codex の writable_roots 設定に `~/.hermes` を追加してください。
+Hermes はサブプロセスとして起動される際に以下の 2 つを要求します：
+
+1. `~/.hermes/logs/agent.log` への書き込み（rotating file logger、失敗時 fatal）
+2. xAI Grok API への HTTPS 通信
+
+Codex の各サンドボックスでの可否：
+
+| サンドボックス | 書き込み | ネットワーク | hermes が動く？ |
+|--------------|:--------:|:----------:|:-------------:|
+| `read-only`（既定） | ✗ | ✗ | ❌ |
+| `workspace-write`（既定設定）| cwd のみ | ✗ | ❌ |
+| `workspace-write` + 2 オプション ↓ | `~/.hermes` 含む | ✓ | ✅ **推奨** |
+| `danger-full-access` | 何でも書ける | ✓ | ✅（過剰権限）|
+
+**最小権限で動かす推奨コマンド**：
 
 ```bash
-# 最も手早い方法（フルアクセス、サンドボックス無効）
-codex exec --sandbox danger-full-access \
-  "@example_user の最新ポスト 3件を取得して"
-
-# よりきめ細かい権限制御：~/.hermes を writable_roots に追加
 codex exec --sandbox workspace-write \
   -c 'sandbox_workspace_write.writable_roots=["~/.hermes"]' \
+  -c 'sandbox_workspace_write.network_access=true' \
   "@example_user の最新ポスト 3件を取得して"
 ```
+
+この組み合わせは：
+- 書き込みを **cwd + `~/.hermes` だけ** に限定（home 全体は許可されない）
+- ネットワークは **明示的に許可**
+- フルアクセスより安全
+
+毎回打つのが面倒なら `~/.codex/config.toml` に projects プロファイルとして固定化することも可能です。
 
 **直接コマンド（ラッパー単体）:**
 ```bash
@@ -213,7 +230,7 @@ hermes_x_search.py [OPTIONS]
 - **キーワード検索の精度は Grok 任せ**: 一般的な単語（例: "Claude Code"）の場合、Grok が X Search ツールを呼ばずに空配列を返すことがあります。`--user` 指定との併用、より具体的なフレーズ、短期間指定で安定する傾向。
 - **`since` / `until` は Grok が X 検索クエリ言語に翻訳**: 期間が狭すぎる・古すぎると 0 件になります。
 - **起動時間**: 1 リクエストあたり 30〜120 秒（Hermes 起動 + LLM 推論 + ツール実行）。将来的な常駐デーモン化は ToDo。
-- **Codex のサンドボックス**: デフォルトの `read-only` サンドボックスでは Hermes が `~/.hermes/logs/agent.log` への書き込みを拒否されます。`workspace-write` も cwd 外を書けないため、`--sandbox danger-full-access` を指定するか、`-c 'sandbox_workspace_write.writable_roots=["~/.hermes"]'` で `~/.hermes` を明示許可してください。
+- **Codex のサンドボックス**: 既定の `read-only` では Hermes が動きません（書き込み + ネットワーク両方が必要）。最小権限は `--sandbox workspace-write` + `writable_roots=["~/.hermes"]` + `network_access=true`（[セットアップ Step 6](#step-6-動作確認) 参照）。
 - **likes / reposts / views**: X Search ツールが返さない場合があり、その時は `null` になります。
 
 ## トラブルシュート
@@ -226,7 +243,7 @@ hermes_x_search.py [OPTIONS]
 | `exit 12` / `rate limit` | しばらく待って再試行 |
 | `exit 13` / `could not parse JSON` | `--debug` で生応答を確認。Grok の出力が壊れている可能性 |
 | Claude Code が skill を発動しない | `~/.claude/skills/hermes-x-search/` が存在するか確認。無ければ `./scripts/install.sh` を再実行 |
-| Codex が hermes を呼べない | サンドボックス問題: `--sandbox danger-full-access` か `-c 'sandbox_workspace_write.writable_roots=["~/.hermes"]'`。PATH 問題: `HERMES_BIN=/path/to/hermes` を設定 |
+| Codex が hermes を呼べない（書き込み拒否 / Connection error）| サンドボックス問題: `--sandbox workspace-write -c 'sandbox_workspace_write.writable_roots=["~/.hermes"]' -c 'sandbox_workspace_write.network_access=true'`。PATH 問題: `HERMES_BIN=/path/to/hermes` を設定 |
 | 「No matching posts found.」が返るが結果があるはず | 既知制約セクション参照。`--user` 併用や具体的キーワードを試す |
 
 ### 詳細デバッグ
