@@ -240,15 +240,13 @@ stderr に「=== PROMPT TO HERMES ===」「=== HERMES STDOUT ===」が出力さ�
 
 ## 貢献
 
-Issue / PR 歓迎。本リポジトリは [](https://github.com/) 準拠の開発フローを採用しています：
+Issue / PR 歓迎。基本ルール：
 
-1. issue を立てる
-2. `/issue-investigate <URL>` で調査・対応方針コメント
-3. `/issue-implement <URL>` で実装 + PR
-4. `/pr-review <URL>` で Codex + Claude セルフレビュー
-5. 人間レビュー → マージ
+1. **Issue ファースト** — 作業前に必ず issue を立てる（小さな修正・docs も例外なし）
+2. **PR にはテスト結果エビデンス必須** — 単体テスト出力 / 実コマンドと出力 / サニタイズ済みキャプチャを PR 本文または直後コメントに添付
+3. **セルフレビューを先に投稿** — 人間レビューに回す前に、PR 作成者が自分でセルフレビューコメントを書く（可能なら別モデルでクロスレビュー併用）
 
-開発時のルールは [CLAUDE.md](./CLAUDE.md) を参照。詳細は [CONTRIBUTING.md](./CONTRIBUTING.md)。
+詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) / [CLAUDE.md](./CLAUDE.md) を参照。
 
 ### テスト
 

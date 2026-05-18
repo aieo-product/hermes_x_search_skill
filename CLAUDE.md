@@ -19,15 +19,22 @@ Claude Code / Codex CLI から Hermes Agent 経由で X (Twitter) 検索を行�
 
 ### 開発フロー
 
- スキル（[](https://github.com/...)）に準拠。
+**1. Issue ファースト（必須）**
 
-| Step | コマンド | 概要 |
-|------|----------|------|
-| 1+2 | `/issue-investigate <URL>` | 調査・対応方針コメント |
-| 3 | `/issue-implement <URL>` | 実装 & PR |
-| 3.5 | `/issue-test <PR URL>` | E2E テスト・エビデンス |
-| 4 | `/pr-review <PR URL>` | Codex + Claude セルフレビュー |
-| 6 | `/post-merge-test <URL>` | マージ後テスト |
+作業は必ず issue を立ててから着手する。リファクタ、bug fix、docs、chore も含めて例外なし。issue 番号は PR タイトル / 本文・コミットメッセージで参照する（`Refs #N` / `Closes #N`）。
+
+**2. PR にはテスト結果エビデンス必須（必須）**
+
+PR 本文または直後の PR コメントに、その変更に対応する試験結果を必ず添付する：
+- ロジック変更：単体テスト（pytest）の実行結果（pass/fail 件数 + 実行時間）
+- 振る舞い変更：E2E 出力サンプル（実コマンドと出力）、必要に応じて `evidence` ブランチへ push して URL を貼る
+- ドキュメント変更：レンダリング確認 or 主要リンクの疎通結果
+
+**エビデンス無しの PR はマージしない**。再現コマンドは PR レビュー時に追試できる形で記載する。
+
+**3. セルフレビュー**
+
+人間レビューに回す前に、PR 作成者がセルフレビューコメントを投稿する。可能であれば Codex などの別モデルでクロスレビューを併用する。
 
 ### コメント / PR の言語
 
@@ -59,7 +66,7 @@ Claude Code / Codex CLI から Hermes Agent 経由で X (Twitter) 検索を行�
 
 - 単体テストは `tests/` 配下に配置（pytest 想定）
 - E2E は `tests/e2e/` 配下、実 Hermes 起動を伴うため CI からは除外可
-- 大規模リファクタ時は  の Red/Green テスト方針を適用
+- 大規模リファクタ時は Feature Flag を用いた Red/Green テスト（FF off で旧動作を再現 → FF on で新動作を確認）を推奨
 
 ### 依存追加
 
